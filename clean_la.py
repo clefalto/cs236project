@@ -1,10 +1,12 @@
 import os
-# fixes having multiple java installs. i have java 25 and java 17, but pyspark only works with java 17
-os.environ["JAVA_HOME"] = "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.20.101-hotspot" 
-os.environ["HADOOP_HOME"] = "C:\\Users\\hamom\\Documents\\hw\\cs236\\hadoop-3.3.6"
+import glob
+
+temp_dir = "cleaned/la"
+output_file = "cleaned/la_cleaned.csv"
 
 from pyspark.sql import SparkSession
-from pyspark.sql import functions as F
+# from pyspark.sql import functions as F
+from pyspark.sql.functions import substring, length, col, expr
 
 spark = SparkSession.builder.appName("CS236Phase1").getOrCreate()
 
@@ -40,24 +42,31 @@ rename_map = {
 }
 
 la_df_renamed = la_df.withColumnsRenamed(rename_map)
-la_df_renamed.show()
 
+columns_to_drop = ["mobile_os"]
 
+la_df_cleaned = la_df_renamed.drop(*columns_to_drop)
 
-print(la_df_renamed.select("zip_code").filter(la_df_renamed.zip_code.isNull()).count())
-la_df_filtered = la_df_renamed.filter(F.col("zip_code").isNotNull())
-print(la_df_filtered.select("zip_code").filter(la_df_filtered.zip_code.isNull()).count())
+la_df_cleaned = la_df_cleaned.filter(col("zip_code").isNotNull())
+
+# rows remaining:
+print("rows remaining after cleaning LA: " + str(la_df_cleaned.count()))
+
+# chop off zip code from LA address fields (always the last 7 characters)
+la_df_cleaned = la_df_cleaned.withColumn("address", expr("substring(address, 1, length(address)-7)"))
 
 # adding request duration column (in hours)
 # (lowkey can probably do this on the merged dataset so we dont need to do it on each cleaning step)
-la_df_filtered = la_df_filtered.withColumn("request_duration", (F.col("closed_date").cast("long") - F.col("opened_date").cast("long")) / (60.0*60.0))
-la_df_filtered.select("opened_date", "closed_date", "request_duration").show()
+# la_df_cleaned = la_df_cleaned.withColumn("request_duration", (F.col("closed_date").cast("long") - F.col("opened_date").cast("long")) / (60.0*60.0))
+# la_df_cleaned.select("opened_date", "closed_date", "request_duration").show()
 
-# response time column (also in hours)
-la_df_filtered = la_df_filtered.withColumn("response_time", (F.col("service_date").cast("long") - F.col("opened_date").cast("long")) / (60.0*60.0))
-la_df_filtered.select("opened_date", "service_date", "response_time").show()
+# # response time column (also in hours)
+# la_df_cleaned = la_df_cleaned.withColumn("response_time", (F.col("service_date").cast("long") - F.col("opened_date").cast("long")) / (60.0*60.0))
+# la_df_cleaned.select("opened_date", "service_date", "response_time").show()
 
-# la_df_filtered.coalesce(1).write.csv("file:///C:\\Users\\hamom\\Documents\\hw\\cs236\\cleaned\\", header=True, mode="overwrite")
-p_df = la_df_filtered.toPandas()
-
-p_df.to_csv("cleaned/la_cleaned.csv", index=False)
+la_df_cleaned.coalesce(1).write.csv(f"{temp_dir}/", header=True, mode="overwrite")
+part_file = glob.glob(f"{temp_dir}/part-*.csv")[0]
+os.rename(part_file, output_file)
+for file in glob.glob(f"{temp_dir}/*", include_hidden=True):
+    os.remove(file) # scary line
+os.rmdir(temp_dir)

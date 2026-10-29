@@ -1,10 +1,7 @@
 import os
-# fixes having multiple java installs. i have java 25 and java 17, but pyspark only works with java 17
-os.environ["JAVA_HOME"] = "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.20.101-hotspot" 
 
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
-import matplotlib.pyplot as plt
 
 spark = SparkSession.builder.appName("CS236Phase1").getOrCreate()
 
@@ -60,3 +57,4 @@ print("unique addresses in NYC: " + str(nyc_df.select("incident_address").distin
 la_df.groupBy("zipcode").count().orderBy("count", ascending=False).show(100)
 nyc_df.groupBy("incident_zip").count().orderBy("count", ascending=False).show(100)
 
+print(la_df.filter(la_df.zipcode.isNull() & (la_df.requesttype == "Feedback")).count())
