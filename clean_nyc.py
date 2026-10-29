@@ -19,6 +19,8 @@ rename_map = {
     "community_board" : "neighborhood_council_name",
 }
 
+columns_to_drop = []
+
 nyc_df_renamed = nyc_df.withColumnsRenamed(rename_map)
 nyc_df_renamed.show()
 
