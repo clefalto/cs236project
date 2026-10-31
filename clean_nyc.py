@@ -33,12 +33,44 @@ nyc_df_dropped = nyc_df_renamed.drop(*columns_to_drop)
 nyc_df_dropped.show()
 
 # remove null zips
-nyc_df_filtered = nyc_df_dropped.filter(F.col("zip_code").isNotNull())
+nyc_df_cleaned = nyc_df_dropped.filter(F.col("zip_code").isNotNull())
 
 # print remaining row counts after cleaning
-print("rows remaining after cleaning NYC: " + str(nyc_df_filtered.count()))
+print("rows remaining after cleaning NYC: " + str(nyc_df_cleaned.count()))
 
-nyc_df_filtered.coalesce(1).write.csv(f"{temp_dir}/", header=True, mode="overwrite")
+# standardizing values
+
+# status column is fine
+
+# rename possible values of the `request_type` column
+type_remap = {
+    "Dead Animal" : "Dead Animal Removal",
+    "Illegal Dumping" : "Illegal Dumping Pickup",
+    "Encampment" : "Homeless Encampment",
+    "Graffiti" : "Graffiti Removal",
+    "Water System" : "Water Waste",
+    "Street Light Condition" : "Streetlight Issue",
+    "Missed Collection" : "Item Collection",
+    "APPLIANCE" : "Metal/Appliance"
+}
+nyc_df_cleaned = nyc_df_cleaned.replace(to_replace=type_remap, subset=["request_type"])
+
+# rename possible values of source
+source_remap = {
+    "MOBILE" : "Mobile",
+    "PHONE" : "Phone",
+    "ONLINE" : "Online",
+    "OTHER" : "Other",
+    "UNKNOWN" : "Unknown"
+}
+nyc_df_cleaned = nyc_df_cleaned.replace(to_replace=source_remap, subset=["source"])
+
+nyc_df_cleaned.select("request_type").distinct().show(200)
+nyc_df_cleaned.select("source").distinct().show()
+
+nyc_df_cleaned.groupBy("request_type").count().orderBy("count", ascending=False).show(200)
+
+nyc_df_cleaned.coalesce(1).write.csv(f"{temp_dir}/", header=True, mode="overwrite")
 part_file = glob.glob(f"{temp_dir}/part-*.csv")[0]
 os.rename(part_file, output_file)
 for file in glob.glob(f"{temp_dir}/*", include_hidden=True):

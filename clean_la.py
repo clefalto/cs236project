@@ -55,14 +55,40 @@ print("rows remaining after cleaning LA: " + str(la_df_cleaned.count()))
 # chop off zip code from LA address fields (always the last 7 characters)
 la_df_cleaned = la_df_cleaned.withColumn("address", expr("substring(address, 1, length(address)-7)"))
 
-# adding request duration column (in hours)
-# (lowkey can probably do this on the merged dataset so we dont need to do it on each cleaning step)
-# la_df_cleaned = la_df_cleaned.withColumn("request_duration", (F.col("closed_date").cast("long") - F.col("opened_date").cast("long")) / (60.0*60.0))
-# la_df_cleaned.select("opened_date", "closed_date", "request_duration").show()
+# standardization of multiple columns. see report
 
-# # response time column (also in hours)
-# la_df_cleaned = la_df_cleaned.withColumn("response_time", (F.col("service_date").cast("long") - F.col("opened_date").cast("long")) / (60.0*60.0))
-# la_df_cleaned.select("opened_date", "service_date", "response_time").show()
+# rename possible values of `status` column
+status_remap = {
+    "Referred Out" : "Assigned",
+    "Forward" : "Assigned"
+}
+la_df_cleaned = la_df_cleaned.replace(to_replace=status_remap, subset=["status"])
+
+# rename possible values of the `request_type` column
+type_remap = {
+    "Single Streetlight Issue" : "Streetlight Issue",
+    "Multiple Streetlight Issue" : "Streetlight Issue",
+    "Water Waste" : "Report Water Waste",
+    "Metal/Household Appliances" : "Metal/Appliance",
+    "Bulky Items" : "Item Collection"
+}
+la_df_cleaned = la_df_cleaned.replace(to_replace=type_remap, subset=["request_type"])
+
+# rename possible values of source
+source_remap = {
+    "Mobile App" : "Mobile",
+    "Call" : "Phone",
+    "Customer Call" : "Phone",
+    "Voicemail" : "Phone",
+    "Email" : "Online",
+    "Web Form" : "Online"
+}
+la_df_cleaned = la_df_cleaned.replace(to_replace=source_remap, subset=["source"])
+
+la_df_cleaned.printSchema()
+la_df_cleaned.select("status").distinct().show()
+la_df_cleaned.select("request_type").distinct().show()
+la_df_cleaned.select("source").distinct().show()
 
 la_df_cleaned.coalesce(1).write.csv(f"{temp_dir}/", header=True, mode="overwrite")
 part_file = glob.glob(f"{temp_dir}/part-*.csv")[0]
