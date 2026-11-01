@@ -18,7 +18,7 @@ la_df = la_df.withColumn("source_city", F.lit("la"))
 nyc_df = nyc_df.withColumn("source_city", F.lit("nyc"))
 
 # columns we want to keep, the rest we drop
-columns_to_keep = ["opened_date", "closed_date", "status", "request_type", "source", \
+columns_to_keep = ["original_key", "opened_date", "closed_date", "status", "request_type", "source", \
 "address", "zip_code", "service_date", "council_district", "action_taken", "neighborhood_council_name", \
 "police_precinct", "latitude", "longitude", "location", "source_city"]
 
@@ -29,6 +29,10 @@ merged_df = la_df.union(nyc_df)
 
 merged_df.printSchema()
 print(merged_df.count())
+
+print("Adding unique ID")
+merged_df = merged_df.withColumn("id", F.monotonically_increasing_id())
+merged_df = merged_df.drop(F.col("original_key"))
 
 print("Adding derived columns")
 # adding request duration column (in hours)
@@ -42,6 +46,8 @@ merged_df.select("opened_date", "service_date", "response_time").show()
 # resolve time column
 merged_df = merged_df.withColumn("resolve_time", F.abs(F.col("closed_date").cast("long") - F.col("service_date").cast("long")) / (60.0 * 60.0))
 merged_df.select("service_date", "closed_date", "resolve_time").show()
+
+merged_df.printSchema()
 
 
 merged_df.coalesce(1).write.csv(f"{temp_dir}/", header=True, mode="overwrite")
