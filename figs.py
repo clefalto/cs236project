@@ -73,7 +73,7 @@ df_prop = counts.withColumn("proportion", F.col("l2count") / F.col("count"))
 
 
 df_prop = df_prop.orderBy("count", ascending=False).select(["request_type", "proportion"])
-pd_prop = df_prop.limit(10).toPandas()
+pd_prop = df_prop.limit(15).toPandas()
 fig4, ax4 = plt.subplots(layout="constrained") # to make the x ticks/title not get cut off
 plt.bar(x=pd_prop["request_type"], height=pd_prop["proportion"])
 plt.xticks(rotation="vertical")
