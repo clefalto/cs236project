@@ -49,11 +49,15 @@ la_df_cleaned = la_df_renamed.drop(*columns_to_drop)
 
 la_df_cleaned = la_df_cleaned.filter(col("zip_code").isNotNull())
 
+before_zip_removal = la_df_cleaned.count()
+la_df_cleaned = la_df_cleaned.filter(length(col("zip_code")) == 5)
+print(f"{before_zip_removal - la_df_cleaned.count()} malformed zip codes removed")
+
 # rows remaining:
 print("rows remaining after cleaning LA: " + str(la_df_cleaned.count()))
 
 # chop off zip code from LA address fields (always the last 7 characters)
-la_df_cleaned = la_df_cleaned.withColumn("address", expr("substring(address, 1, length(address)-7)"))
+# la_df_cleaned = la_df_cleaned.withColumn("address", expr("substring(address, 1, length(address)-7)"))
 
 # standardization of multiple columns. see report
 
@@ -86,9 +90,9 @@ source_remap = {
 la_df_cleaned = la_df_cleaned.replace(to_replace=source_remap, subset=["source"])
 
 la_df_cleaned.printSchema()
-la_df_cleaned.select("status").distinct().show()
-la_df_cleaned.select("request_type").distinct().show()
-la_df_cleaned.select("source").distinct().show()
+# la_df_cleaned.select("status").distinct().show()
+# la_df_cleaned.select("request_type").distinct().show()
+# la_df_cleaned.select("source").distinct().show()
 
 la_df_cleaned.coalesce(1).write.csv(f"{temp_dir}/", header=True, mode="overwrite")
 part_file = glob.glob(f"{temp_dir}/part-*.csv")[0]
@@ -96,3 +100,4 @@ os.rename(part_file, output_file)
 for file in glob.glob(f"{temp_dir}/*", include_hidden=True):
     os.remove(file) # scary line
 os.rmdir(temp_dir)
+print("wrote to csv :)")

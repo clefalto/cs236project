@@ -49,6 +49,11 @@ merged_df.select("service_date", "closed_date", "resolve_time").show()
 
 merged_df.printSchema()
 
+# for c in merged_df.columns:
+#     n = merged_df.filter(
+#         F.col(c).isNotNull() & F.expr(f"try_cast(`{c}` as bigint)").isNull()
+#     ).count
+#     print(c, n)
 
 merged_df.coalesce(1).write.csv(f"{temp_dir}/", header=True, mode="overwrite")
 part_file = glob.glob(f"{temp_dir}/part-*.csv")[0]

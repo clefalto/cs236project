@@ -30,10 +30,17 @@ columns_to_drop = ["facility_type", "due_date", "vehicle_type", "taxi_company_bo
 
 nyc_df_renamed = nyc_df.withColumnsRenamed(rename_map)
 nyc_df_dropped = nyc_df_renamed.drop(*columns_to_drop)
-nyc_df_dropped.show()
+# nyc_df_dropped.show()
 
 # remove null zips
 nyc_df_cleaned = nyc_df_dropped.filter(F.col("zip_code").isNotNull())
+
+# remove malformed zips (zips that don't have 5 characters)
+# uncommenting these following lines makes the write to csv break in merge_datasets for whatever reason. 
+# doesn't make much difference, there's only one malformed zip code in this entire dataset
+# before_zip_removal = nyc_df_cleaned.count()
+# nyc_df_cleaned = nyc_df_cleaned.filter(F.length(F.col("zip_code")) == 5)
+# print(f"{before_zip_removal - nyc_df_cleaned.count()} malformed zip codes removed")
 
 # print remaining row counts after cleaning
 print("rows remaining after cleaning NYC: " + str(nyc_df_cleaned.count()))
@@ -65,10 +72,12 @@ source_remap = {
 }
 nyc_df_cleaned = nyc_df_cleaned.replace(to_replace=source_remap, subset=["source"])
 
-nyc_df_cleaned.select("request_type").distinct().show(200)
-nyc_df_cleaned.select("source").distinct().show()
+# nyc_df_cleaned.select("request_type").distinct().show(200)
+# nyc_df_cleaned.select("source").distinct().show()
 
-nyc_df_cleaned.groupBy("request_type").count().orderBy("count", ascending=False).show(200)
+# nyc_df_cleaned.groupBy("request_type").count().orderBy("count", ascending=False).show(200)
+
+nyc_df_cleaned.printSchema()
 
 nyc_df_cleaned.coalesce(1).write.csv(f"{temp_dir}/", header=True, mode="overwrite")
 part_file = glob.glob(f"{temp_dir}/part-*.csv")[0]
