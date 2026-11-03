@@ -4,6 +4,7 @@ Datasets not included in this repository to make it faster to download but you c
 
 ### Instructions
 - Note that this project requires Pyspark 4.2.1, Pandas, and matplotlib. All dependencies should be in the `requirements.txt` file, so you can run `pip install -r requirements.txt` to download all of them. 
-- Download the datasets and run `clean_la.py` and `clean_nyc.py` to clean them. These will be written to the `cleaned/` directory in the root of the project. It'll be created if it doesn't exist.
+- Download the datasets and run `raw_eda.py` to view some pre-clean statistics about the two datasets, such as the number of null values, the frequencies of request types, etc. We used many of these statistics when writing our report. 
+-  Run `clean_la.py` and `clean_nyc.py` to clean the datasets. The cleaned CSVs will be written to the `cleaned/` directory in the root of the project. It'll be created if it doesn't exist. Now you can run `cleaned_eda.py` to view the same statistics from `raw_eda` on the cleaned datasets. 
 - Once you've cleaned them, you can run `merge_datasets.py` to create the merged dataset in the `merged/` directory. 
-- After merging, you can run `figs.py` to generate figures and `partial_eda.py` to see some statistics about the datasets, such as the number of null values, the frequencies of request types, etc. We used most of these statistics when writing our report in one way or another. 
+- After merging, you can run `figs.py` to generate figures and `cleaned_eda.py` to see some statistics about the datasets

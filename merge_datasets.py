@@ -27,6 +27,7 @@ nyc_df = nyc_df.select(*columns_to_keep)
 
 merged_df = la_df.union(nyc_df)
 
+print("Merged dataset without derived columns:")
 merged_df.printSchema()
 print(merged_df.count())
 
@@ -47,13 +48,10 @@ merged_df.select("opened_date", "service_date", "response_time").show()
 merged_df = merged_df.withColumn("resolve_time", F.abs(F.col("closed_date").cast("long") - F.col("service_date").cast("long")) / (60.0 * 60.0))
 merged_df.select("service_date", "closed_date", "resolve_time").show()
 
+print("Final merged dataset:")
+print(f"{merged_df.count()} rows, {len(merged_df.columns)} columns")
 merged_df.printSchema()
 
-# for c in merged_df.columns:
-#     n = merged_df.filter(
-#         F.col(c).isNotNull() & F.expr(f"try_cast(`{c}` as bigint)").isNull()
-#     ).count
-#     print(c, n)
 
 merged_df.coalesce(1).write.csv(f"{temp_dir}/", header=True, mode="overwrite")
 part_file = glob.glob(f"{temp_dir}/part-*.csv")[0]
