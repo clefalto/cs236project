@@ -25,6 +25,9 @@ columns_to_keep = ["original_key", "opened_date", "closed_date", "status", "requ
 la_df = la_df.select(*columns_to_keep)
 nyc_df = nyc_df.select(*columns_to_keep)
 
+la_df = la_df.withColumn("original_key", col("original_key").cast("string"))
+nyc_df = nyc_df.withColumn("original_key", col("original_key").cast("string"))
+
 merged_df = la_df.union(nyc_df)
 
 print("Merged dataset without derived columns:")
@@ -33,7 +36,7 @@ print(merged_df.count())
 
 print("Adding unique ID")
 merged_df = merged_df.withColumn("id", F.monotonically_increasing_id())
-merged_df = merged_df.drop(F.col("original_key"))
+# merged_df = merged_df.drop(F.col("original_key"))
 
 print("Adding derived columns")
 # adding request duration column (in hours)

@@ -33,7 +33,7 @@ for row in topten_zip_df.rdd.toLocalIterator():
 
 
 # pd_la_zipcodes = la_zip_df.limit(10).toPandas()
-# fig1, ax1 = plt.subplots()
+# fig1, ax1 = plt.subplots()percentage
 # ax1.bar(pd_la_zipcodes["zip_code"], pd_la_zipcodes["count"])
 # plt.title("LA Top 10 Zipcode Frequencies")
 # plt.xlabel("Zipcode")

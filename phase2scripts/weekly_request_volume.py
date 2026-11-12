@@ -28,6 +28,11 @@ la_min_opened_month = (la_df.select(F.month(F.min("opened_date"))).first()[0])
 la_min_opened_year = (la_df.select(F.year(F.min("opened_date"))).first()[0])
 la_max_opened_month = (la_df.select(F.month(F.max("opened_date"))).first()[0])
 
+# day 1-7
+# day 8-14
+# day 15-21
+# day 22 - end of the month
+
 # very inefficient iterative solution
 # weekwise_columns = ["start", "end", "count"]
 # weekwise_schema = StructType([
@@ -71,8 +76,8 @@ bucketed_df = (
     .withColumn("month_start", F.trunc("opened_date", "month")) # truncate each start date to start of the month
     .withColumn( # create new start column :)
         "start",
-        F.when(F.col("day_of_month") <= 7, F.col("month_start")) 
-        .when(F.col("day_of_month") <= 14, F.date_add("month_start", 7)) # start day becomes 8
+        F.when(F.col("day_of_month") <= 7, F.col("month_start")) # 11/6/2024 start: 11/1/2024
+        .when(F.col("day_of_month") <= 14, F.date_add("month_start", 7)) # start day becomes 8 
         .when(F.col("day_of_month") <= 21, F.date_add("month_start", 14)) # start day becomes 22
         .otherwise(F.date_add("month_start", 21)),
     )
@@ -81,7 +86,7 @@ bucketed_df = (
         F.when(F.col("day_of_month") <= 7, F.date_add("month_start", 6)) # add 6 days, end day is 7
         .when(F.col("day_of_month") <= 14, F.date_add("month_start", 13)) # add 13 days to start day, end day is 14
         .when(F.col("day_of_month") <= 21, F.date_add("month_start", 20)) # add 20 days to start day, end day is 21
-        .otherwise(F.last_day("opened_date")),
+        .otherwise(F.last_day("opened_date")), 
     )
 )
 
