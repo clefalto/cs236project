@@ -31,6 +31,16 @@ for row in topten_zip_df.rdd.toLocalIterator():
     filtered_by_counts = filtered_by_counts.limit(3)
     filtered_by_counts.show()
 
+    # Create a bar chart for the top 3 request types in this zip code by relative frequency
+    filtered_pd = filtered_by_counts.toPandas()
+    fig,ax = plt.subplots()
+    ax.bar(filtered_pd["request_type"], filtered_pd["percentage"])
+    plt.ylim(0, 1)
+    plt.title(f"Top 3 Request Types for Zip Code {row.zip_code}")
+    plt.xlabel("Request Type")
+    plt.ylabel("Percentage")
+    plt.savefig(f"la/request_types_zip_{row.zip_code}.png")
+
 
 # pd_la_zipcodes = la_zip_df.limit(10).toPandas()
 # fig1, ax1 = plt.subplots()percentage
@@ -50,9 +60,19 @@ for row in topten_zip_df_nyc.rdd.toLocalIterator():
     filtered_by_zip_nyc = nyc_df.where(F.col("zip_code") == row.zip_code)
     total_in_zip_nyc = filtered_by_zip_nyc.count()
     filtered_by_counts_nyc = filtered_by_zip_nyc.groupBy("request_type").count().orderBy("count", ascending=False)
-    filtered_by_counts_nyc = filtered_by_counts_nyc.withColumn("percentage", F.col("count") / total_in_zip)
+    filtered_by_counts_nyc = filtered_by_counts_nyc.withColumn("percentage", F.col("count") / total_in_zip_nyc)
     filtered_by_counts_nyc = filtered_by_counts_nyc.limit(3)
     filtered_by_counts_nyc.show()
+
+    # Create a bar chart for the top 3 request types in this zip code by relative frequency
+    filtered_pd_nyc = filtered_by_counts_nyc.toPandas()
+    fig,ax = plt.subplots()
+    ax.bar(filtered_pd_nyc["request_type"], filtered_pd_nyc["percentage"])
+    plt.ylim(0, 1)
+    plt.title(f"Top 3 Request Types for Zip Code {row.zip_code}")
+    plt.xlabel("Request Type")
+    plt.ylabel("Percentage")
+    plt.savefig(f"nyc/request_types_zip_{row.zip_code}.png")
 
 # fig2, ax2 = plt.subplots()
 # ax2.bar(pd_nyc_zipcodes["zip_code"], pd_nyc_zipcodes["count"])
@@ -60,4 +80,3 @@ for row in topten_zip_df_nyc.rdd.toLocalIterator():
 # plt.xlabel("Zipcode")
 # plt.ylabel("Frequency")
 # plt.savefig("nyc_zipcodes_top10.png")
-
