@@ -16,16 +16,15 @@ merged_df = spark.read.csv("merged/merged_311.csv", header=True, inferSchema=Tru
 la_df = merged_df.where(F.col("source_city") == "la")
 la_status_counts = la_df.groupBy("status").count()
 la_percentages = la_status_counts.withColumn("percentage", F.col("count") / la_df.count())
-la_percentages = la_percentages.orderBy("percentage", ascending=False).limit(5)
 la_percentages.show()
 
 nyc_df = merged_df.where(F.col("source_city") == "nyc")
 nyc_status_counts = nyc_df.groupBy("status").count()
 nyc_percentages = nyc_status_counts.withColumn("percentage", F.col("count") / nyc_df.count())
-nyc_percentages = nyc_percentages.orderBy("percentage", ascending=False).limit(5)
 nyc_percentages.show()
 
 # Create separate bar charts for the status counts and percentages for each city
+la_percentages = la_percentages.orderBy("percentage", ascending=False).limit(5)
 la_status_pd = la_percentages.toPandas()
 fig, ax = plt.subplots()
 ax.bar(la_status_pd["status"], la_status_pd["percentage"])
@@ -36,6 +35,7 @@ plt.ylabel("Percentage")
 plt.tight_layout()
 plt.savefig("la_request_status_percentages.png")
 
+nyc_percentages = nyc_percentages.orderBy("percentage", ascending=False).limit(5)
 nyc_status_pd = nyc_percentages.toPandas()
 fig, ax = plt.subplots()
 ax.bar(nyc_status_pd["status"], nyc_status_pd["percentage"])
@@ -49,15 +49,14 @@ plt.savefig("nyc_request_status_percentages.png")
 # For each submission channel, calculate the number and percentage of requests submitted through that channel for each city
 la_submission_counts = la_df.groupBy("source").count()
 la_submission_percentages = la_submission_counts.withColumn("percentage", F.col("count") / la_df.count())
-la_submission_percentages = la_submission_percentages.orderBy("percentage", ascending=False).limit(5)
 la_submission_percentages.show()
 
 nyc_submission_counts = nyc_df.groupBy("source").count()
 nyc_submission_percentages = nyc_submission_counts.withColumn("percentage", F.col("count") / nyc_df.count())
-nyc_submission_percentages = nyc_submission_percentages.orderBy("percentage", ascending=False).limit(5)
 nyc_submission_percentages.show()
 
 # Create separate bar charts for the submission channel for each city
+la_submission_percentages = la_submission_percentages.orderBy("percentage", ascending=False).limit(5)
 la_submission_pd = la_submission_percentages.toPandas()
 fig, ax = plt.subplots()
 ax.bar(la_submission_pd["source"], la_submission_pd["percentage"])
@@ -68,6 +67,7 @@ plt.ylabel("Percentage")
 plt.tight_layout()
 plt.savefig("la_request_submission_percentages.png")
 
+nyc_submission_percentages = nyc_submission_percentages.orderBy("percentage", ascending=False).limit(5)
 nyc_submission_pd = nyc_submission_percentages.toPandas()
 fig, ax = plt.subplots()
 ax.bar(nyc_submission_pd["source"], nyc_submission_pd["percentage"])
