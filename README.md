@@ -12,7 +12,9 @@ Datasets not included in this repository to make it faster to download but you c
 ## Phase 2 Instructions
 For running the analysis scripts:
 - Run `phase2scripts/service_req_hotspots.py` to perform the zip code analysis. This script both outputs to the terminal and creates images in the project's root. 
-- Run `phase2scripts/weekly_request_volume.py` to perform the weekly bucketing analysis. Once again, this script outputs to the terminal and creates images. 
+- Run `phase2scripts/weekly_request_volume.py` to perform the weekly bucketing analysis. Once again, this script outputs to the terminal and creates images.
+- Run `phase2scripts/resolution_performance.py` to perform the resolution performance analysis. This prints the average and median resolution time and generates plots showing the top five request types by average resolution time for each city.
+- Run `phase2scripts/status_submission_stats.py` to perform the request status and submission type analysis. This prints and plots the frequency of requests in each request status and submission channel category separately per city.
 
 For populating the database:
 - This project uses Docker, so make sure you have it installed! The datasets are also pretty large so make sure you have adequate storage
