@@ -145,3 +145,24 @@ highest_count_nyc = weekwise_count_df_nyc.orderBy(F.col("count"), ascending=Fals
 
 lowest_count_nyc.show()
 highest_count_nyc.show()
+
+# Convert pyspark dataframes to pandas for matplotlib compatibility
+weekwise_count_pd = weekwise_count_df.toPandas()
+weekwise_count_nyc_pd = weekwise_count_df_nyc.toPandas()
+
+# Plot weekwise count for LA
+fig,(ax_la) = plt.subplots(1, 1, figsize=(12, 8), sharex=True, layout="constrained")
+ax_la.plot(weekwise_count_pd["start"], weekwise_count_pd["count"], marker="o")
+ax_la.set_title("LA Weekly Request Volume")
+ax_la.set_ylabel("Request count")
+fig.autofmt_xdate()
+fig.savefig("weekly_request_volume_la.png")
+
+# Plot weekwise count for NYC
+fig,(ax_nyc) = plt.subplots(1, 1, figsize=(12, 8), sharex=True, layout="constrained")
+ax_nyc.plot(weekwise_count_nyc_pd["start"], weekwise_count_nyc_pd["count"], marker="o", color="tab:orange",)
+ax_nyc.set_title("NYC Weekly Request Volume")
+ax_nyc.set_xlabel("Week start date")
+ax_nyc.set_ylabel("Request count")
+fig.autofmt_xdate()
+fig.savefig("weekly_request_volume_nyc.png")
